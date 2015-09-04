@@ -1,5 +1,3 @@
-require "sqlite2mysql/version"
+require 'sqlite2mysql/version'
 
-module Sqlite2mysql
-  # Your code goes here...
-end
+puts 'WARNING: Including sqlite2mysql does nothing, run it from the terminal.'
