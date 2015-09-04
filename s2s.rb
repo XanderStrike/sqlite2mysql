@@ -1,10 +1,10 @@
+#!/usr/bin/env ruby
+
 require 'mysql2'
 require 'sqlite3'
 
-DATABASE = 'test.db'
-
-# don't change this
-SQL_DB_NAME = DATABASE.gsub(/[^0-9a-z]/i, '')
+DATABASE = ARGV.first
+SQL_DB_NAME = ARGV[1] || DATABASE.gsub(/[^0-9a-z]/i, '')
 
 # ~~~ gather sqlite info ~~~
 puts 'Collecting Sqlit3 Info'
@@ -34,7 +34,12 @@ def create_table_query(table, columns)
   query = "CREATE TABLE #{table} ("
   cols = []
   columns.each do |col|
-    cols << "#{col[0]} #{col[1] == "" ? 'varchar(255)' : col[1]}"
+    if col[1] == ''
+      col[1] = 'varchar(255)'
+    elsif col[1].start_with?('float')
+      col[1] = 'float'
+    end
+    cols << "#{col[0]} #{col[1]}"
   end
   query + "#{cols.join(', ')})"
 end
@@ -47,6 +52,7 @@ client.query("USE #{SQL_DB_NAME}")
 
 schema.keys.each do |table|
   puts "Creating table: #{table}"
+  puts create_table_query(table, schema[table])
   client.query(create_table_query(table, schema[table]))
 end
 
