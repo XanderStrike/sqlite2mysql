@@ -4,7 +4,7 @@ require 'sqlite3'
 DATABASE = 'test.db'
 
 # don't change this
-FORMATTED_DATABASE = DATABASE.gsub(/[^0-9a-z]/i, '')
+SQL_DB_NAME = DATABASE.gsub(/[^0-9a-z]/i, '')
 
 # ~~~ gather sqlite info ~~~
 puts 'Collecting Sqlit3 Info'
@@ -28,7 +28,7 @@ tables.flatten.each do |t|
 end
 
 # ~~~ build mysql db ~~~
-puts "Creating MySQL DB: #{FORMATTED_DATABASE}"
+puts "Creating MySQL DB: #{SQL_DB_NAME}"
 
 def create_table_query(table, columns)
   query = "CREATE TABLE #{table} ("
@@ -41,9 +41,9 @@ end
 
 client = Mysql2::Client.new(host: 'localhost', username: 'root')
 
-client.query("DROP DATABASE IF EXISTS #{FORMATTED_DATABASE}")
-client.query("CREATE DATABASE #{FORMATTED_DATABASE}")
-client.query("USE #{FORMATTED_DATABASE}")
+client.query("DROP DATABASE IF EXISTS #{SQL_DB_NAME}")
+client.query("CREATE DATABASE #{SQL_DB_NAME}")
+client.query("USE #{SQL_DB_NAME}")
 
 schema.keys.each do |table|
   puts "Creating table: #{table}"
