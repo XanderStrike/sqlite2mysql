@@ -7,6 +7,7 @@ DATABASE = 'test.db'
 FORMATTED_DATABASE = DATABASE.gsub(/[^0-9a-z]/i, '')
 
 # ~~~ gather sqlite info ~~~
+puts 'Collecting Sqlit3 Info'
 db = SQLite3::Database.new DATABASE
 
 schema = {}
@@ -27,6 +28,8 @@ tables.flatten.each do |t|
 end
 
 # ~~~ build mysql db ~~~
+puts "Creating MySQL DB: #{FORMATTED_DATABASE}"
+
 def create_table_query(table, columns)
   query = "CREATE TABLE #{table} ("
   cols = []
@@ -37,11 +40,26 @@ def create_table_query(table, columns)
 end
 
 client = Mysql2::Client.new(host: 'localhost', username: 'root')
+
 client.query("DROP DATABASE IF EXISTS #{FORMATTED_DATABASE}")
 client.query("CREATE DATABASE #{FORMATTED_DATABASE}")
 client.query("USE #{FORMATTED_DATABASE}")
+
 schema.keys.each do |table|
+  puts "Creating table: #{table}"
   client.query(create_table_query(table, schema[table]))
 end
 
 # ~~~ populate mysql ~~~
+print 'Grab a ☕'
+schema.keys.each do |table|
+  puts "\nInserting data: #{table}"
+  data = db.execute("select * from #{table}")
+  data.each_slice(1000) do |slice|
+    print '.'
+    slice.each do |row|
+      client.query("INSERT INTO #{table} VALUES (\"#{row.join('", "')}\")")
+    end
+  end
+end
+puts ''
