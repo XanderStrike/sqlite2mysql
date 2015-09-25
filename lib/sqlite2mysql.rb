@@ -1,16 +1,16 @@
 require 'sqlite2mysql/version'
 require 'sqlite2mysql/services/mysql'
 require 'sqlite2mysql/services/sqlite'
+require 'sqlite2mysql/services/type_inferrer'
 
 puts 'WARNING: Including sqlite2mysql is silly, run it from the terminal.'
 
 class Sqlite2Mysql
   class << self
-
     def testguy(args)
       database = args.first
-      db = SqliteClient.new(database, infer_column_types: false)
-      puts db.infer_type_of('submit_clicked', 'oodles')
+      db = SqliteClient.new(database, infer_column_types: true)
+      puts db.type_getter(nil, 'oodles', 'slice')
       # puts db.infer_type_of('created_at', 'joodles')
       # puts db.infer_type_of('phone_number', 'oodles')
     end
