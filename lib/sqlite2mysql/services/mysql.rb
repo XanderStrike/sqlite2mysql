@@ -52,11 +52,6 @@ class MysqlClient
     cols = []
     fields.each do |col|
       col[:name] += '_1' if reserved_words.include?(col[:name])
-      if col[:type] == ''
-        col[:type] = 'varchar(255)'
-      elsif col[:type].start_with?('float')
-        col[:type] = 'float'
-      end
       cols << "#{col[:name]} #{col[:type]} #{'NOT NULL' if col[:notnull]}"
     end
     query + "#{cols.join(', ')})"

@@ -6,12 +6,16 @@ puts 'WARNING: Including sqlite2mysql is silly, run it from the terminal.'
 
 class Sqlite2Mysql
   class << self
-    def run(args)
-      do_everything(args)
-      1
+
+    def testguy(args)
+      database = args.first
+      db = SqliteClient.new(database, infer_column_types: false)
+      puts db.infer_type_of('submit_clicked', 'oodles')
+      # puts db.infer_type_of('created_at', 'joodles')
+      # puts db.infer_type_of('phone_number', 'oodles')
     end
 
-    def do_everything(args)
+    def run(args)
       puts 'Usage: sqlite2mysql sqlite_file.db [mysql_db_name]' if args.size < 1
 
       database = args.first
@@ -19,7 +23,7 @@ class Sqlite2Mysql
 
       puts 'Collecting Sqlite3 Info'
 
-      db = SqliteClient.new database
+      db = SqliteClient.new(database, infer_column_types: true)
 
       schema = db.build_schema
 
@@ -37,6 +41,8 @@ class Sqlite2Mysql
         mysql.insert_table(table, data)
       end
       puts ''
+
+      1
     end
   end
 end
