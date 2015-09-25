@@ -1,8 +1,8 @@
 require 'mysql2'
 
 class MysqlClient
-  def initialize(host:, username:)
-    @client = Mysql2::Client.new(host: host, username: username)
+  def initialize(*args)
+    @client = Mysql2::Client.new(*args)
   end
 
   def recreate(name)
@@ -19,6 +19,7 @@ class MysqlClient
   end
 
   def create_table(table, fields)
+    puts create_table_query(table, fields)
     @client.query(create_table_query(table, fields))
   end
 

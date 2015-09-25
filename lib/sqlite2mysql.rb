@@ -1,27 +1,29 @@
 require 'sqlite2mysql/version'
+require 'sqlite2mysql/services/arguments'
+require 'sqlite2mysql/services/bound_finder'
 require 'sqlite2mysql/services/mysql'
 require 'sqlite2mysql/services/sqlite'
 require 'sqlite2mysql/services/type_inferrer'
-require 'sqlite2mysql/services/bound_finder'
 
 class Sqlite2Mysql
   class << self
     def run(args)
-      puts 'Usage: sqlite2mysql sqlite_file.db [mysql_db_name]' if args.size < 1
-
-      database = args.first
-      sql_db_name = args[1] || database.gsub(/[^0-9a-z]/i, '')
+      arguments = Arguments.new(args)
 
       puts 'Collecting Sqlite3 Info'
 
-      db = SqliteClient.new(database, infer_column_types: true)
+      db = SqliteClient.new(arguments.sqlite_db, infer_column_types: arguments.infer_types)
 
       schema = db.build_schema
 
-      puts "Creating MySQL DB: #{sql_db_name}"
+      puts "Creating MySQL DB: #{arguments.mysql_db}"
 
-      mysql = MysqlClient.new(host: 'localhost', username: 'root')
-      mysql.recreate(sql_db_name)
+      mysql = MysqlClient.new(
+        host:     arguments.mysql_host,
+        username: arguments.username,
+        password: arguments.password,
+        port:     arguments.mysql_port)
+      mysql.recreate(arguments.mysql_db)
       mysql.build_from_schema(schema)
 
       print 'Grab a ☕'
@@ -32,8 +34,6 @@ class Sqlite2Mysql
         mysql.insert_table(table, data)
       end
       puts ''
-
-      1
     end
   end
 end

@@ -42,10 +42,12 @@ class SqliteClient
       puts "Inferring type of #{column} as #{type}"
       return type
     else
-      if type == ''
+      if type == '' || type.nil?
         return 'varchar(255)'
       elsif type.start_with?('float')
         return 'float'
+      else
+        return type
       end
     end
   end
