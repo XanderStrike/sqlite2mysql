@@ -1,11 +1,8 @@
-require 'mysql2'
-require 'sqlite3'
-
 require 'sqlite2mysql/version'
 require 'sqlite2mysql/services/mysql'
 require 'sqlite2mysql/services/sqlite'
 
-puts 'WARNING: Including sqlite2mysql does nothing, run it from the terminal.'
+puts 'WARNING: Including sqlite2mysql is silly, run it from the terminal.'
 
 class Sqlite2Mysql
   class << self
@@ -22,25 +19,9 @@ class Sqlite2Mysql
 
       puts 'Collecting Sqlite3 Info' # ===============================================
 
-      db = SQLite3::Database.new database
+      db = SqliteClient.new database
 
-      schema = {}
-
-      tables = db.execute 'SELECT name FROM sqlite_master WHERE type="table"'
-
-      tables.flatten.each do |t|
-        columns = db.execute("pragma table_info(#{t})")
-
-        formatted_columns = []
-        columns.each do |col|
-          formatted_columns << { name:    col[1],
-                                 type:    col[2],
-                                 notnull: col[3],
-                                 default: col[4] }
-        end
-
-        schema[t] = formatted_columns
-      end
+      schema = db.build_schema
 
       puts "Creating MySQL DB: #{sql_db_name}" # ====================================
 
@@ -56,7 +37,7 @@ class Sqlite2Mysql
 
       schema.keys.each do |table|
         puts "\nInserting data: #{table}"
-        data = db.execute("select * from #{table}")
+        data = db.get_data(table)
         mysql.insert_table(table, data)
       end
       puts ''

@@ -1,3 +1,5 @@
+require 'mysql2'
+
 class MysqlClient
   def initialize(host:, username:)
     @client = Mysql2::Client.new(host: host, username: username)
