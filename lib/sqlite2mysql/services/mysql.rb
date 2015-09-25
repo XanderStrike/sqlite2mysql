@@ -14,18 +14,29 @@ class MYSQL
   end
 
   def insert_table(table, data)
+    # Ruby's memory management becomes a problem at over 1k
     data.each_slice(1000) do |slice|
-      slice.each do |row|
-        cleaned_row = row.map do |val|
-          val.is_a?(String) ? @client.escape(val) : val
-        end
-        @client.query("INSERT INTO #{table} VALUES (\"#{cleaned_row.join('", "')}\")")
-      end
+      @client.query(chunk_sql(table, slice))
       print '.'
     end
   end
 
   private
+
+  def chunk_sql(table, chunk)
+    values = []
+    chunk.each do |row|
+      values << "#{row_sql(row)}"
+    end
+    "INSERT INTO #{table} VALUES #{values.join(', ')}"
+  end
+
+  def row_sql(row)
+    values = row.map do |val|
+      val.is_a?(String) ? @client.escape(val) : val
+    end
+    "(\"#{values.join('", "')}\")"
+  end
 
   def create_table_query(table, fields)
     reserved_words = %w(key int)
