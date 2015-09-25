@@ -1,4 +1,4 @@
-class MYSQL
+class MysqlClient
   def initialize(host:, username:)
     @client = Mysql2::Client.new(host: host, username: username)
   end
@@ -14,7 +14,6 @@ class MYSQL
   end
 
   def insert_table(table, data)
-    # Ruby's memory management becomes a problem at over 1k
     data.each_slice(1000) do |slice|
       @client.query(chunk_sql(table, slice))
       print '.'

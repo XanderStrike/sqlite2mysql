@@ -3,6 +3,7 @@ require 'sqlite3'
 
 require 'sqlite2mysql/version'
 require 'sqlite2mysql/services/mysql'
+require 'sqlite2mysql/services/sqlite'
 
 puts 'WARNING: Including sqlite2mysql does nothing, run it from the terminal.'
 
@@ -43,12 +44,12 @@ class Sqlite2Mysql
 
       puts "Creating MySQL DB: #{sql_db_name}" # ====================================
 
-      client = MYSQL.new(host: 'localhost', username: 'root')
-      client.recreate(sql_db_name)
+      mysql = MysqlClient.new(host: 'localhost', username: 'root')
+      mysql.recreate(sql_db_name)
 
       schema.keys.each do |table|
         puts "Creating table: #{table}"
-        client.create_table(table, schema[table])
+        mysql.create_table(table, schema[table])
       end
 
       print 'Grab a ☕' # ============================================================
@@ -56,7 +57,7 @@ class Sqlite2Mysql
       schema.keys.each do |table|
         puts "\nInserting data: #{table}"
         data = db.execute("select * from #{table}")
-        client.insert_table(table, data)
+        mysql.insert_table(table, data)
       end
       puts ''
     end
