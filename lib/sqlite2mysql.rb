@@ -17,23 +17,19 @@ class Sqlite2Mysql
       database = args.first
       sql_db_name = args[1] || database.gsub(/[^0-9a-z]/i, '')
 
-      puts 'Collecting Sqlite3 Info' # ===============================================
+      puts 'Collecting Sqlite3 Info'
 
       db = SqliteClient.new database
 
       schema = db.build_schema
 
-      puts "Creating MySQL DB: #{sql_db_name}" # ====================================
+      puts "Creating MySQL DB: #{sql_db_name}"
 
       mysql = MysqlClient.new(host: 'localhost', username: 'root')
       mysql.recreate(sql_db_name)
+      mysql.build_from_schema(schema)
 
-      schema.keys.each do |table|
-        puts "Creating table: #{table}"
-        mysql.create_table(table, schema[table])
-      end
-
-      print 'Grab a ☕' # ============================================================
+      print 'Grab a ☕'
 
       schema.keys.each do |table|
         puts "\nInserting data: #{table}"

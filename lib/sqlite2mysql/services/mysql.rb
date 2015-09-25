@@ -11,6 +11,13 @@ class MysqlClient
     @client.query("USE #{name}")
   end
 
+  def build_from_schema(schema)
+    schema.keys.each do |table|
+      puts "Creating table: #{table}"
+      create_table(table, schema[table])
+    end
+  end
+
   def create_table(table, fields)
     @client.query(create_table_query(table, fields))
   end
