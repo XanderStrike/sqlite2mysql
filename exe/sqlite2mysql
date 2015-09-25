@@ -1,78 +1,82 @@
 #!/usr/bin/env ruby
 
-require 'mysql2'
-require 'sqlite3'
+require 'sqlite2mysql'
 
-puts 'Usage: sqlite2mysql sqlite_file.db [mysql_db_name]' if ARGV.size < 1
+Sqlite2Mysql.run(ARGV)
 
-DATABASE = ARGV.first
-SQL_DB_NAME = ARGV[1] || DATABASE.gsub(/[^0-9a-z]/i, '')
+# require 'mysql2'
+# require 'sqlite3'
 
-puts 'Collecting Sqlit3 Info' # ===============================================
+# puts 'Usage: sqlite2mysql sqlite_file.db [mysql_db_name]' if ARGV.size < 1
 
-db = SQLite3::Database.new DATABASE
+# DATABASE = ARGV.first
+# SQL_DB_NAME = ARGV[1] || DATABASE.gsub(/[^0-9a-z]/i, '')
 
-schema = {}
+# puts 'Collecting Sqlit3 Info' # ===============================================
 
-tables = db.execute 'SELECT name FROM sqlite_master WHERE type="table"'
+# db = SQLite3::Database.new DATABASE
 
-tables.flatten.each do |t|
-  columns = db.execute("pragma table_info(#{t})")
+# schema = {}
 
-  formatted_columns = []
-  columns.each do |col|
-    formatted_columns << { name:    col[1],
-                           type:    col[2],
-                           notnull: col[3],
-                           default: col[4] }
-  end
+# tables = db.execute 'SELECT name FROM sqlite_master WHERE type="table"'
 
-  schema[t] = formatted_columns
-end
+# tables.flatten.each do |t|
+#   columns = db.execute("pragma table_info(#{t})")
 
-puts "Creating MySQL DB: #{SQL_DB_NAME}" # ====================================
+#   formatted_columns = []
+#   columns.each do |col|
+#     formatted_columns << { name:    col[1],
+#                            type:    col[2],
+#                            notnull: col[3],
+#                            default: col[4] }
+#   end
 
-RESERVED_WORDS = %w(key int)
+#   schema[t] = formatted_columns
+# end
 
-def create_table_query(table, columns)
-  query = "CREATE TABLE #{table} ("
-  cols = []
-  columns.each do |col|
-    col[:name] += '_1' if RESERVED_WORDS.include?(col[:name])
-    if col[:type] == ''
-      col[:type] = 'varchar(255)'
-    elsif col[:type].start_with?('float')
-      col[:type] = 'float'
-    end
-    cols << "#{col[:name]} #{col[:type]} #{'NOT NULL' if col[:notnull]}"
-  end
-  query + "#{cols.join(', ')})"
-end
+# puts "Creating MySQL DB: #{SQL_DB_NAME}" # ====================================
 
-client = Mysql2::Client.new(host: 'localhost', username: 'root')
+# RESERVED_WORDS = %w(key int)
 
-client.query("DROP DATABASE IF EXISTS #{SQL_DB_NAME}")
-client.query("CREATE DATABASE #{SQL_DB_NAME}")
-client.query("USE #{SQL_DB_NAME}")
+# def create_table_query(table, columns)
+#   query = "CREATE TABLE #{table} ("
+#   cols = []
+#   columns.each do |col|
+#     col[:name] += '_1' if RESERVED_WORDS.include?(col[:name])
+#     if col[:type] == ''
+#       col[:type] = 'varchar(255)'
+#     elsif col[:type].start_with?('float')
+#       col[:type] = 'float'
+#     end
+#     cols << "#{col[:name]} #{col[:type]} #{'NOT NULL' if col[:notnull]}"
+#   end
+#   query + "#{cols.join(', ')})"
+# end
 
-schema.keys.each do |table|
-  puts "Creating table: #{table}"
-  client.query(create_table_query(table, schema[table]))
-end
+# client = Mysql2::Client.new(host: 'localhost', username: 'root')
 
-print 'Grab a ☕' # ============================================================
+# client.query("DROP DATABASE IF EXISTS #{SQL_DB_NAME}")
+# client.query("CREATE DATABASE #{SQL_DB_NAME}")
+# client.query("USE #{SQL_DB_NAME}")
 
-schema.keys.each do |table|
-  puts "\nInserting data: #{table}"
-  data = db.execute("select * from #{table}")
-  data.each_slice(1000) do |slice|
-    slice.each do |row|
-      cleaned_row = row.map do |val|
-        val.is_a?(String) ? client.escape(val) : val
-      end
-      client.query("INSERT INTO #{table} VALUES (\"#{cleaned_row.join('", "')}\")")
-    end
-    print '.'
-  end
-end
-puts ''
+# schema.keys.each do |table|
+#   puts "Creating table: #{table}"
+#   client.query(create_table_query(table, schema[table]))
+# end
+
+# print 'Grab a ☕' # ============================================================
+
+# schema.keys.each do |table|
+#   puts "\nInserting data: #{table}"
+#   data = db.execute("select * from #{table}")
+#   data.each_slice(1000) do |slice|
+#     slice.each do |row|
+#       cleaned_row = row.map do |val|
+#         val.is_a?(String) ? client.escape(val) : val
+#       end
+#       client.query("INSERT INTO #{table} VALUES (\"#{cleaned_row.join('", "')}\")")
+#     end
+#     print '.'
+#   end
+# end
+# puts ''
