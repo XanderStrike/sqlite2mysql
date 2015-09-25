@@ -7,7 +7,7 @@ class TypeInferrer
   def make_inference
     possibilities = weigh_possibilities
 
-    case possibilities.max_by { |k,v| v }.first
+    case possibilities.max_by(&:last).first
     when :int
       return get_integer_type
     when :float
@@ -30,7 +30,7 @@ class TypeInferrer
       string: 0
     }.tap do |possibilities|
       @samples.each do |sample|
-        if sample.is_a?(Date) || sample.is_a?(Time) || sample.is_a?(String) && %r((\d{1,2}[-\/]\d{1,2}[-\/]\d{4})|(\d{4}[-\/]\d{1,2}[-\/]\d{1,2})).match(sample)
+        if date_or_time?(sample)
           if sample.is_a?(Date) || Date.parse(sample).to_time == Time.parse(sample)
             possibilities[:date] += 1
           else
@@ -67,6 +67,19 @@ class TypeInferrer
     max_length = @bound_finder.max_length
     max_length = 1 if max_length == 0 || max_length.nil?
 
+    return 'TEXT' if max_length > 255
+
     "VARCHAR(#{max_length})"
+  end
+
+  private
+
+  def date_or_time?(sample)
+    sample.is_a?(Date) ||
+      sample.is_a?(Time) ||
+      sample.is_a?(String) &&
+      (%r((\d{1,2}[-\/]\d{1,2}[-\/]\d{4})|(\d{4}[-\/]\d{1,2}[-\/]\d{1,2})).match(sample) &&
+        Date.parse(sample) rescue false &&
+        Time.parse(sample) rescue false)
   end
 end

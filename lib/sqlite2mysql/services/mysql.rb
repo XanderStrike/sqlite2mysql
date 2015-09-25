@@ -41,7 +41,11 @@ class MysqlClient
 
   def row_sql(row)
     values = row.map do |val|
-      val.is_a?(String) ? @client.escape(val) : val
+      if val.is_a?(String)
+        (val.empty? || val.nil? || val == '') ? nil : @client.escape(val)
+      else
+         val
+      end
     end
     "(\"#{values.join('", "')}\")"
   end

@@ -6,14 +6,6 @@ require 'sqlite2mysql/services/bound_finder'
 
 class Sqlite2Mysql
   class << self
-    def testguy(args)
-      database = args.first
-      db = SqliteClient.new(database, infer_column_types: true)
-      puts db.type_getter(nil, 'oodles', 'slice')
-      # puts db.infer_type_of('created_at', 'joodles')
-      # puts db.infer_type_of('phone_number', 'oodles')
-    end
-
     def run(args)
       puts 'Usage: sqlite2mysql sqlite_file.db [mysql_db_name]' if args.size < 1
 
