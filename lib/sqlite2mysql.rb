@@ -2,8 +2,7 @@ require 'sqlite2mysql/version'
 require 'sqlite2mysql/services/mysql'
 require 'sqlite2mysql/services/sqlite'
 require 'sqlite2mysql/services/type_inferrer'
-
-puts 'WARNING: Including sqlite2mysql is silly, run it from the terminal.'
+require 'sqlite2mysql/services/bound_finder'
 
 class Sqlite2Mysql
   class << self

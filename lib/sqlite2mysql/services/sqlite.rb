@@ -37,8 +37,8 @@ class SqliteClient
 
   def type_getter(type, table, column)
     if @infer
-      samples = @db.execute("SELECT #{column} FROM #{table} WHERE #{column} IS NOT NULL AND #{column} != '' ORDER BY RANDOM() LIMIT 100;").flatten
-      type = TypeInferrer.new(samples).make_inference
+      samples = @db.execute("SELECT #{column} FROM #{table} WHERE #{column} IS NOT NULL AND #{column} != '' ORDER BY RANDOM() LIMIT 100").flatten
+      type = TypeInferrer.new(samples, BoundFinder.new(self, table, column)).make_inference
       puts "Inferring type of #{column} as #{type}"
       return type
     else
@@ -48,5 +48,9 @@ class SqliteClient
         return 'float'
       end
     end
+  end
+
+  def select(column, table)
+    @db.execute("SELECT #{column} FROM #{table}").flatten.first
   end
 end
